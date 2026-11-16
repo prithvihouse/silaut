@@ -1,6 +1,6 @@
 # Silaut — Restaurant POS & Inventory System
 
-Silaut is a single-location point-of-sale and inventory system that connects cashier orders, kitchen stations, ingredient stock, and shift reporting. Bite More Buckhead is the sample workspace. Checkout is simulated.
+Silaut is a restaurant point-of-sale and inventory system that connects cashier orders, kitchen stations, ingredient stock, and shift reporting. Bite More Buckhead is the sample workspace. Checkout is simulated.
 
 **Video demo:** [Watch the 90-second demo](YOUR_YOUTUBE_VIDEO_URL)
 
