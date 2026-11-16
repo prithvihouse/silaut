@@ -1,0 +1,17 @@
+{
+  admin off
+}
+:8080 {
+  basic_auth {
+    {$BASIC_AUTH_USER} {$BASIC_AUTH_HASH}
+  }
+  header {
+    X-Content-Type-Options nosniff
+    X-Frame-Options DENY
+    Referrer-Policy same-origin
+    Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    -Server
+  }
+  encode zstd gzip
+  reverse_proxy app:3000
+}

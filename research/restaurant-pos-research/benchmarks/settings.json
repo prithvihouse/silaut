@@ -1,0 +1,48 @@
+{
+  "api_image": "redis-pos-testbed-benchmark-api:local",
+  "fixture_seed": 42,
+  "workload_seed": 6212026,
+  "schedule_seed": 188204,
+  "cache_ttl_s": 10,
+  "think_ms": 100,
+  "timeout_ms": 3000,
+  "graceful_stop_s": 12,
+  "probe_period_ms": 2000,
+  "hot_percent": 80,
+  "stock_per_ingredient": 1000000,
+  "repetitions": 3,
+  "menu_select_regex": "pos_menu_item",
+  "extra_read_regex": null,
+  "profiles": {
+    "exploratory": {
+      "vus": [10],
+      "warmup_s": 3,
+      "measure_s": 8,
+      "freshness_s": 10
+    },
+    "pilot": {
+      "vus": [
+        1,
+        2,
+        10,
+        50,
+        100
+      ],
+      "warmup_s": 10,
+      "measure_s": 15,
+      "freshness_s": 12,
+      "cold_s": 5
+    },
+    "formal": {
+      "vus": [
+        10,
+        50,
+        100
+      ],
+      "warmup_s": 30,
+      "measure_s": 120,
+      "freshness_s": 60,
+      "cold_s": 5
+    }
+  }
+}

@@ -1,0 +1,3 @@
+volumes:
+  postgres-data:
+    name: ${SILAUT_LIVE_DB_VOLUME:?Set a dedicated live promotion volume in .env}

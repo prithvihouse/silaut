@@ -1,0 +1,25 @@
+{
+  "items": [
+    {"id":1,"name":"Smash Burger","price":999,"category":"Burgers","description":"Single patty, American cheese, house sauce","recipe":{"1":1,"2":1,"3":1,"4":25}},
+    {"id":2,"name":"Double Smash Burger","price":1399,"category":"Burgers","description":"Two patties, double cheese, house sauce","recipe":{"1":2,"2":1,"3":2,"4":30}},
+    {"id":3,"name":"Chicken Tenders","price":1099,"category":"Kitchen","description":"Three crispy tenders, house dipping sauce","recipe":{"5":3,"4":30}},
+    {"id":4,"name":"Fries","price":449,"category":"Sides","description":"Golden, crisp, lightly sea-salted","recipe":{"6":200,"7":2}},
+    {"id":5,"name":"Cajun Chicken Alfredo","price":1699,"category":"Kitchen","description":"Grilled chicken, creamy Alfredo, Cajun spice","recipe":{"8":180,"9":200,"10":150,"11":5}},
+    {"id":6,"name":"House Lemonade","price":399,"category":"Drinks","description":"Fresh lemon, just enough sweetness","recipe":{"12":60,"13":25}}
+  ],
+  "ingredients": [
+    {"id":1,"name":"Beef patty","unit":"patty","stock":48,"low":10},
+    {"id":2,"name":"Brioche bun","unit":"bun","stock":48,"low":10},
+    {"id":3,"name":"American cheese","unit":"slice","stock":80,"low":20},
+    {"id":4,"name":"House sauce","unit":"g","stock":2400,"low":400},
+    {"id":5,"name":"Chicken tender","unit":"piece","stock":45,"low":12},
+    {"id":6,"name":"Potato fries","unit":"g","stock":8000,"low":2000},
+    {"id":7,"name":"Sea salt","unit":"g","stock":1000,"low":100},
+    {"id":8,"name":"Grilled chicken","unit":"g","stock":3600,"low":900},
+    {"id":9,"name":"Pasta","unit":"g","stock":6000,"low":1000},
+    {"id":10,"name":"Alfredo sauce","unit":"g","stock":3000,"low":600},
+    {"id":11,"name":"Cajun seasoning","unit":"g","stock":80,"low":100},
+    {"id":12,"name":"Lemon juice","unit":"ml","stock":3000,"low":600},
+    {"id":13,"name":"Cane sugar","unit":"g","stock":2500,"low":500}
+  ]
+}

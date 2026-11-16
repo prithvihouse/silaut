@@ -1,0 +1,99 @@
+name: silaut-demo
+x-logging: &logging
+  driver: json-file
+  options: {max-size: "10m", max-file: "3"}
+x-app-environment: &app-environment
+  PGHOST: postgres
+  PGPORT: "5432"
+  PGDATABASE: ${SILAUT_DB_NAME:-silaut_demo}
+  PGUSER: pos_app
+  PGPASSWORD: ${POS_APP_PASSWORD:?Run scripts/configure.sh}
+  PG_POOL_MAX: "10"
+  REDIS_URL: redis://redis:6379/0
+  CACHE_MODE: ${CACHE_MODE:-ttl-fenced}
+  CACHE_TTL_SECONDS: ${CACHE_TTL_SECONDS:-10}
+services:
+  postgres:
+    image: postgres:17.12-bookworm
+    restart: unless-stopped
+    command: ["postgres","-c","shared_preload_libraries=pg_stat_statements"]
+    environment:
+      POSTGRES_DB: ${SILAUT_DB_NAME:-silaut_demo}
+      POSTGRES_USER: silaut_owner
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run scripts/configure.sh}
+      POS_APP_PASSWORD: ${POS_APP_PASSWORD:?Run scripts/configure.sh}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./deploy/init-role.sh:/docker-entrypoint-initdb.d/010-role.sh:ro
+    networks: [private]
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U silaut_owner -d \"$$POSTGRES_DB\""]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+    logging: *logging
+  redis:
+    image: redis:7.4.12-bookworm
+    restart: unless-stopped
+    command: ["redis-server","--save","","--appendonly","no","--maxmemory","64mb","--maxmemory-policy","noeviction"]
+    networks: [private]
+    healthcheck:
+      test: ["CMD","redis-cli","ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+    logging: *logging
+  app:
+    image: ${SILAUT_APP_IMAGE:-silaut-app:local}
+    build: .
+    init: true
+    restart: unless-stopped
+    environment: *app-environment
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    networks: [private]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    healthcheck:
+      test: ["CMD","node","-e","fetch('http://127.0.0.1:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    logging: *logging
+  bootstrap:
+    image: ${SILAUT_APP_IMAGE:-silaut-app:local}
+    profiles: [tools]
+    environment:
+      <<: *app-environment
+      PGUSER: silaut_owner
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Run scripts/configure.sh}
+    networks: [private]
+    command: ["sh","-c","node backend/migrate.js && node backend/import-menu.js && node backend/grants.js"]
+    logging: *logging
+  caddy:
+    image: caddy:2.10.2-alpine
+    restart: unless-stopped
+    environment:
+      BASIC_AUTH_USER: ${BASIC_AUTH_USER:?Run scripts/configure.sh}
+      BASIC_AUTH_HASH: ${BASIC_AUTH_HASH:?Run scripts/configure.sh}
+      SITE_HOST: ${SITE_HOST:-pos.example.com}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+    ports: ["127.0.0.1:${SILAUT_LOOPBACK_PORT:-8080}:8080"]
+    volumes:
+      - ./deploy/Caddyfile.${DEPLOY_MODE:-tunnel}:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      app: {condition: service_healthy}
+    networks: [private,edge]
+    logging: *logging
+networks:
+  private: {internal: true}
+  edge: {}
+volumes:
+  postgres-data: {}
+  caddy-data: {}
+  caddy-config: {}

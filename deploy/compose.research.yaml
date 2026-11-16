@@ -1,0 +1,76 @@
+name: silaut-research
+x-research-env: &research-env
+  PGHOST: postgres
+  PGDATABASE: silaut_research
+  PGUSER: pos_app
+  PGPASSWORD: ${POS_APP_PASSWORD:?}
+  REDIS_URL: redis://redis:6379/0
+  CACHE_MODE: postgres
+services:
+  postgres:
+    image: postgres:17.12-bookworm
+    environment:
+      POSTGRES_USER: research_owner
+      POSTGRES_DB: silaut_research
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      POS_APP_PASSWORD: ${POS_APP_PASSWORD:?}
+    command: ["postgres","-c","shared_preload_libraries=pg_stat_statements"]
+    volumes:
+      - research-postgres:/var/lib/postgresql/data
+      - ./init-role.sh:/docker-entrypoint-initdb.d/010-role.sh:ro
+    networks: [research]
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U research_owner -d silaut_research"]
+      interval: 2s
+      retries: 30
+  redis:
+    image: redis:7.4.12-bookworm
+    networks: [research]
+  bootstrap:
+    image: silaut-app:local
+    networks: [research]
+    environment:
+      <<: *research-env
+      PGUSER: research_owner
+      PGPASSWORD: ${POSTGRES_PASSWORD:?}
+    command: ["sh","-c","node backend/migrate.js && node backend/grants.js"]
+  api:
+    image: silaut-app:local
+    environment: *research-env
+    networks: [research]
+    healthcheck:
+      test: ["CMD","node","-e","fetch('http://127.0.0.1:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  verifier:
+    image: silaut-app:local
+    environment:
+      <<: *research-env
+      POS_BASE_URL: http://api:3000
+    networks: [research]
+    volumes:
+      - ${SILAUT_VERIFICATION_DIR:?}:/verification
+    command: ["node","tests/baseline-smoke.cjs"]
+  benchmark:
+    image: grafana/k6:2.3.0
+    user: "${SILAUT_UID:-1000}:${SILAUT_GID:-1000}"
+    networks: [research]
+    environment:
+      POS_BASE_URL: http://api:3000
+      POS_SETTINGS: /research/benchmarks/settings.json
+      POS_FIXTURE: /research/database/fixture.json
+      POS_PHASE: measure
+      POS_WORKLOAD: mixed
+      POS_VUS: "2"
+      POS_DURATION_S: "3"
+      POS_WORKLOAD_SEED: "${SILAUT_BENCH_SEED:?}"
+      K6_NO_USAGE_REPORT: "true"
+    volumes:
+      - ${SILAUT_ROOT:?}/research/restaurant-pos-research:/research:ro
+      - ${SILAUT_VERIFICATION_DIR:?}:/verification
+    command: ["run","--quiet","--out","json=/verification/benchmark-ec2.ndjson","/research/benchmarks/k6/performance.js"]
+networks:
+  research: {internal: true}
+volumes:
+  research-postgres: {}

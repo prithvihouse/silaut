@@ -1,0 +1,42 @@
+name: silaut-test
+services:
+  postgres:
+    image: postgres:17.12-bookworm
+    environment:
+      POSTGRES_USER: silaut_test_owner
+      POSTGRES_DB: silaut_test
+      POSTGRES_PASSWORD: ${TEST_DB_PASSWORD:?Run scripts/test-ec2.sh}
+      POS_APP_PASSWORD: ${TEST_APP_PASSWORD:?Run scripts/test-ec2.sh}
+    command: ["postgres","-c","shared_preload_libraries=pg_stat_statements"]
+    volumes:
+      - test-postgres:/var/lib/postgresql/data
+      - ./init-role.sh:/docker-entrypoint-initdb.d/010-role.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U silaut_test_owner -d silaut_test"]
+      interval: 2s
+      retries: 30
+    networks: [test]
+  redis:
+    image: redis:7.4.12-bookworm
+    command: ["redis-server","--save","","--appendonly","no"]
+    networks: [test]
+  tests:
+    image: silaut-app:local
+    networks: [test]
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_started}
+    environment:
+      PGHOST: postgres
+      PGDATABASE: silaut_test
+      PGUSER: silaut_test_owner
+      PGPASSWORD: ${TEST_DB_PASSWORD:?Run scripts/test-ec2.sh}
+      SILAUT_TEST_APP_USER: pos_app
+      SILAUT_TEST_APP_PASSWORD: ${TEST_APP_PASSWORD:?Run scripts/test-ec2.sh}
+      REDIS_URL: redis://redis:6379/0
+      SILAUT_ALLOW_TEST_RESET: "1"
+    command: ["sh","-c","node backend/migrate.js && node backend/grants.js && npm test && npm run test:integration"]
+networks:
+  test: {internal: true}
+volumes:
+  test-postgres: {}

@@ -1,0 +1,13 @@
+# Overlay on the UNMODIFIED original research compose.yaml.
+services:
+  api:
+    ports: !reset []
+  verifier:
+    image: silaut-app:local
+    environment:
+      PGHOST: postgres
+      PGDATABASE: pos
+      PGUSER: pos_app
+      PGPASSWORD: ${POS_APP_PASSWORD:?}
+      POS_BASE_URL: http://api:3000
+    command: ["node","tests/baseline-smoke.cjs"]

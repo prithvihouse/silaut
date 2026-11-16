@@ -1,0 +1,17 @@
+{
+  "name": "restaurant-pos-research",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "express": "4.21.2",
+    "pg": "8.14.1",
+    "redis": "4.5.1"
+  },
+  "description": "Restaurant POS cache-policy research testbed",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

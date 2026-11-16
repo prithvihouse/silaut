@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:17.11-bookworm
+    command: ["postgres", "-c", "shared_preload_libraries=pg_stat_statements"]
+    environment:
+      POSTGRES_USER: pos_admin
+      POSTGRES_DB: pos
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POS_APP_PASSWORD: ${POS_APP_PASSWORD:?Set POS_APP_PASSWORD in .env}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U pos_admin -d pos"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+  redis:
+    image: redis:7.4.12-bookworm
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  api:
+    image: redis-pos-testbed-benchmark-api:local
+    build: ./backend
+    init: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGDATABASE: pos
+      PGUSER: pos_app
+      PGPASSWORD: ${POS_APP_PASSWORD:?Set POS_APP_PASSWORD in .env}
+      PG_POOL_MAX: "10"
+      REDIS_URL: redis://redis:6379/0
+      CACHE_MODE: ${CACHE_MODE:-postgres}
+      CACHE_TTL_SECONDS: ${CACHE_TTL_SECONDS:-10}
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+volumes:
+  postgres-data:

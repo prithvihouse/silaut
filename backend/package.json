@@ -1,0 +1,14 @@
+{
+  "name": "@silaut/backend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "4.22.3",
+    "pg": "8.14.1",
+    "redis": "4.5.1",
+    "sharp": "0.34.5"
+  }
+}
