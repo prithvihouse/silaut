@@ -1,14 +1,16 @@
 # Silaut — Restaurant POS & Inventory System
 
+> This repository is the v2.0.0 snapshot. The live demo at silaut.com runs a newer version (public demo mode, CI, deployment tooling) developed privately. Source available to reviewers on request.
+
 Silaut is a restaurant point-of-sale and inventory system that connects cashier orders, kitchen stations, ingredient stock, and shift reporting. Bite More Buckhead is the sample workspace. Checkout is simulated.
 
-**Video demo:** [Watch the 90-second demo](YOUR_YOUTUBE_VIDEO_URL)
+**Video demo:** [Watch the 3-minute demo](https://youtu.be/z0f6--0Ou9Q)
 
-**Live demo:** [https://silaut.com/cashier](https://silaut.com/cashier) (login required).
+**Live demo:** [https://silaut.com](https://silaut.com) (public, no login; demo data resets nightly)
 
 ![Silaut cashier with the Bite More menu and a $22.97 demo cart containing a customized burger and fries](docs/images/cashier.png)
 
-<sub>Signed-in cashier with a $22.97 demo cart.</sub>
+<sub>Cashier with a $22.97 demo cart.</sub>
 
 ```mermaid
 flowchart LR
@@ -36,7 +38,7 @@ bash scripts/configure.sh
 bash scripts/deploy.sh
 ```
 
-Create your own local login when prompted. Certificate contact email is optional for local use. Open [localhost:8080/cashier](http://127.0.0.1:8080/cashier) and sign in with that login. The demo seeds 46 menu items and sample inventory. The shared demo login covers Cashier, Kitchen, Inventory, Sales, Settings, and their APIs.
+Create your own local login when prompted. Certificate contact email is optional for local use. Open [localhost:8080/cashier](http://127.0.0.1:8080/cashier) and sign in with that login. The demo seeds 46 menu items and sample inventory. Locally, that login covers Cashier, Kitchen, Inventory, Sales, Settings, and their APIs.
 
 ```bash
 # Stop the local stack and keep its data
@@ -70,4 +72,4 @@ The Docker verifier runs the original API baseline, the compatibility benchmark,
 
 ## Deployment
 
-**Deployed version:** `v2.0.0`. The EC2 guide covers new setup, HTTPS, PostgreSQL backups, rehearsal, image promotion, and rollback. [EC2 deployment guide](docs/AWS_DEPLOYMENT.md)
+**This snapshot:** `v2.0.0` (the live site now runs a newer private version). The EC2 guide covers new setup, HTTPS, PostgreSQL backups, rehearsal, image promotion, and rollback. [EC2 deployment guide](docs/AWS_DEPLOYMENT.md)
